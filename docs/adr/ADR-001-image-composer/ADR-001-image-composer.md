@@ -1,0 +1,16 @@
+# ADR-001: image-composer — a general image-compositing package
+
+This is the pointer document for ADR-001. It always links to the current version.
+
+- **Current version:** [ADR-001 v0.0.1](./ADR-001-image-composer-0.0.1.md)
+- **Status:** Proposed
+
+## Summary
+
+`image-composer` is a standalone, open-source package (`@atomiclotus/image-composer`) that composes a set of pre-selected images into a single output image through a small, **pure** contract — `composite({ images, layout, meta }) → image` — with **no cloud/storage/DB/network coupling**. It ships a **library and a CLI** over one core. Layouts are **data** (a `{rows}x{cols}` grid or a vertical stack, with margins/inset/background) rendered by one renderer; source-format differences are handled by input normalization rather than a class hierarchy. Phase 1 builds and proves the package in isolation; consumers adopt it as a published dependency, and any consumer's own integration is documented in that consumer's repo.
+
+## Version history
+
+| Version | Date | Status | Notes |
+|---|---|---|---|
+| [0.0.1](./ADR-001-image-composer-0.0.1.md) | 2026-10-18 | Proposed | Initial design of the standalone image-composer package (pure contract, library + CLI, data-driven layouts). |
