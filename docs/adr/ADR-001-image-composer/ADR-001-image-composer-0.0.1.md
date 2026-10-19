@@ -48,12 +48,12 @@ A layout is described by a small text notation. The string carries *structure*; 
 - **Composite (one level of nesting):** regions joined by a **single** operator — `|` (columns, side by side) **or** `/` (rows, stacked), not both in one layout. Each region is a grid `RxC` or a cell `1`. Examples: `1 | 3x2` (a cell beside a 3×2 grid), `2x2 | 2x2`, `1x4 / 1x4`. A region cannot itself contain a further split.
 
 **Sizing — separate templates, CSS-grid style.** Proportions live in their own flags, not in the structure string:
-- `--col-sizes` for a `|` split, `--row-sizes` for a `/` split, using `fr` and fixed `px` (e.g. `"2fr 1fr"`, `"200px 1fr"`), defaulting to equal (`1fr` each). The count must match the number of regions. This mirrors `grid-template-columns` / `grid-template-rows`.
-- Cells within a sub-grid are uniform in v1.
+- `--col-sizes` for a `|` split, `--row-sizes` for a `/` split, defaulting to equal (`1fr` each), with the token count matching the number of regions. This mirrors `grid-template-columns` / `grid-template-rows` and supports the **full CSS track-sizing vocabulary in v1**: `fr`, fixed lengths (`px`), percentages, and the `minmax()` and `auto` functions (e.g. `"2fr 1fr"`, `"200px 1fr"`, `"minmax(120px, 1fr) 2fr"`). `postcss-value-parser` already tokenizes these (functions included); the layout engine implements the track-sizing algorithm — distributing space across tracks honoring min/max and content/auto.
+- Cells within a sub-grid are uniform in v1 (the track sizing applies to the top-level regions).
 
 **Spacing / frame.** `gap` between cells and regions; `margin` / `padding` for the outer frame — CSS naming.
 
-**Deferred to v2 (not needed for the first version):** v1 is a **single-operator, one-level** layout. Grouping (`()`), mixing `|` and `/` in the same layout, and nesting beyond one level are facets of the same capability — all three need a grouping mechanism — so they arrive together in v2. The one independent deferral is **advanced sizing** (`minmax()`, `auto`, named grid areas); v1 sizing is `fr` and fixed `px` only. Keeping v1 to this scope makes the parser and validator trivial.
+**Deferred to v2 (not needed for the first version):** v1 is a **single-operator, one-level** *structure*. Grouping (`()`), mixing `|` and `/` in the same layout, and nesting beyond one level are facets of the same capability — all need a grouping mechanism — so they arrive together in v2, along with **named grid areas** (a separate structural layout mechanism, not a sizing feature). Track **sizing** is fully in v1 (`fr`, `px`, `%`, `minmax()`, `auto`). Keeping the v1 *structure* this simple keeps the parser and validator trivial.
 
 ### 4. Internal design — data-driven layouts, composition over inheritance
 
