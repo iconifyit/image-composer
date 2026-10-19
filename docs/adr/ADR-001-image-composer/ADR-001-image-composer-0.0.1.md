@@ -53,7 +53,7 @@ A layout is described by a small text notation. The string carries *structure*; 
 
 **Spacing / frame.** `gap` between cells and regions; `margin` / `padding` for the outer frame — CSS naming.
 
-**Deferred to v2 (not needed for the first version):** parentheses/grouping, mixing `|` and `/` in one layout, nesting beyond one level, and richer CSS sizing (`minmax()`, `auto`, named grid areas). Limiting v1 to one level keeps the parser and validator trivial.
+**Deferred to v2 (not needed for the first version):** v1 is a **single-operator, one-level** layout. Grouping (`()`), mixing `|` and `/` in the same layout, and nesting beyond one level are facets of the same capability — all three need a grouping mechanism — so they arrive together in v2. The one independent deferral is **advanced sizing** (`minmax()`, `auto`, named grid areas); v1 sizing is `fr` and fixed `px` only. Keeping v1 to this scope makes the parser and validator trivial.
 
 ### 4. Internal design — data-driven layouts, composition over inheritance
 
