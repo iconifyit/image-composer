@@ -59,7 +59,9 @@ A layout is described by a small text notation. The string carries *structure*; 
 
 - **Layouts are data, not subclasses.** The notation above is sugar over a declarative layout definition (regions, their grids, sizes, gaps, background). One renderer reads a layout definition and places images into it — no method-per-layout.
 - **Source-format differences are input normalization, not a type hierarchy.** Differences between source image kinds (for example rasterizing and sizing SVG vs. raster inputs) are handled when normalizing the input images, not by a class per kind.
-- The result is a small package: input normalization, a set of layout definitions, a renderer, and the library/CLI entry points.
+- **Two parsers, each its own class.** Parsing mirrors the structure/sizing split: a **structure parser** turns the layout DSL (`1 | 3x2`, operators, grids) into the layout tree; a **sizing parser** turns the track templates (`2fr 1fr`, `200px 1fr`) into track sizes. Separate classes keep each independently testable.
+- **Reuse for sizing; hand-write structure.** The sizing templates are CSS track-list syntax, so the sizing parser reuses the mature `postcss-value-parser` to tokenize (it handles space-separated lists and functions like `minmax()`/`repeat()`), adding only a thin layer that maps each token to a track size (`1fr` → `{fr:1}`, `200px` → `{px:200}`). `css-tree` is the heavier full-CSS alternative if typed nodes are ever needed; no dedicated `fr`/`minmax` track parser exists, so the semantic mapping is ours regardless. The structure DSL has no off-the-shelf parser — for v1's single-operator, one-level grammar it is a small hand-written recursive-descent parser, with a PEG generator (peggy/ohm-js) deferred to v2 when grouping and nesting arrive.
+- The result is a small package: input normalization, the two parsers, a set of layout definitions, a renderer, and the library/CLI entry points.
 
 ### 5. Packaging and distribution
 
