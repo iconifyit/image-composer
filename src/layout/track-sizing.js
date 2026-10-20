@@ -121,7 +121,7 @@ const resolveTracks = (tracks, { available, gap = 0 }) => {
                 free -= f.room;
             }
             const cappedSet = new Set(capped);
-            active = active.filter((f) => ! cappedSet.has(f));
+            active = active.filter((f) => !cappedSet.has(f));
         }
     }
 

@@ -59,7 +59,10 @@ const gridCells = (rect, rows, cols, gap) => {
  * @param {TrackSize[]} [opts.rowSizes] - region heights for a `/` split (default equal).
  * @returns {{ width: number, height: number, cells: Rect[] }}
  */
-const computeGeometry = (layout, { width, height, gap = 0, margin = 0, colSizes, rowSizes } = {}) => {
+const computeGeometry = (
+    layout,
+    { width, height, gap = 0, margin = 0, colSizes, rowSizes } = {},
+) => {
     const inner = {
         x: margin,
         y: margin,

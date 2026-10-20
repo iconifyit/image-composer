@@ -37,7 +37,17 @@ describe('image-composer CLI', () => {
 
     it('composes from positional image inputs and writes the output', async () => {
         const out = path.join(dir, 'out.png');
-        const stdout = run(['--layout', '2x2', '--width', '100', '--height', '100', '--out', out, ...inputs]);
+        const stdout = run([
+            '--layout',
+            '2x2',
+            '--width',
+            '100',
+            '--height',
+            '100',
+            '--out',
+            out,
+            ...inputs,
+        ]);
 
         expect(stdout).toMatch(/Wrote .*out\.png/);
         expect(fs.existsSync(out)).toBe(true);
@@ -57,6 +67,8 @@ describe('image-composer CLI', () => {
     });
 
     it('exits non-zero when a required option is missing', () => {
-        expect(() => run(['--layout', '2x2', '--out', path.join(dir, 'x.png'), inputs[0]])).toThrow();
+        expect(() =>
+            run(['--layout', '2x2', '--out', path.join(dir, 'x.png'), inputs[0]]),
+        ).toThrow();
     });
 });

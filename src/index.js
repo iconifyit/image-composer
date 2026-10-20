@@ -46,10 +46,10 @@ const composite = async (options = {}) => {
         format = 'png',
     } = options;
 
-    if (! Number.isFinite(width) || ! Number.isFinite(height) || width <= 0 || height <= 0) {
+    if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
         throw new Error('composite: `width` and `height` must be positive numbers.');
     }
-    if (! Array.isArray(images)) {
+    if (!Array.isArray(images)) {
         throw new Error('composite: `images` must be an array of paths or buffers.');
     }
 
@@ -96,7 +96,7 @@ const composite = async (options = {}) => {
  */
 const compositeToFile = async (options = {}) => {
     const { out, ...rest } = options;
-    if (! out) {
+    if (!out) {
         throw new Error('compositeToFile: `out` (destination path) is required.');
     }
     const { buffer, contentType } = await composite(rest);

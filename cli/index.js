@@ -41,7 +41,7 @@ Image inputs are positional arguments, in fill order.`;
 /** Parse a required numeric option. */
 const num = (value, name) => {
     const n = Number(value);
-    if (! Number.isFinite(n)) {
+    if (!Number.isFinite(n)) {
         throw new Error(`--${name} must be a number (got "${value}").`);
     }
     return n;
@@ -104,7 +104,9 @@ async function main(argv) {
         out: values.out,
     });
 
-    process.stdout.write(`Wrote ${result.path} (${values.width}x${values.height}, ${result.contentType})\n`);
+    process.stdout.write(
+        `Wrote ${result.path} (${values.width}x${values.height}, ${result.contentType})\n`,
+    );
 }
 
 /* istanbul ignore next — entrypoint guard */

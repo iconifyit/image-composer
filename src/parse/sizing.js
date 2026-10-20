@@ -93,8 +93,10 @@ class SizingParser {
 
         const fr = FR_RE.exec(token);
         if (fr) {
-            if (! allowFr) {
-                throw new Error(`--sizes: "${raw}" — an fr value cannot be used as a minmax() minimum.`);
+            if (!allowFr) {
+                throw new Error(
+                    `--sizes: "${raw}" — an fr value cannot be used as a minmax() minimum.`,
+                );
             }
             return { type: 'fr', value: Number(fr[1]) };
         }
@@ -109,7 +111,9 @@ class SizingParser {
             return { type: 'percent', value: Number(percent[1]) };
         }
 
-        throw new Error(`--sizes: invalid track size "${raw}"; expected fr, px, %, auto, or minmax().`);
+        throw new Error(
+            `--sizes: invalid track size "${raw}"; expected fr, px, %, auto, or minmax().`,
+        );
     }
 }
 

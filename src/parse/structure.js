@@ -40,23 +40,29 @@ class StructureParser {
      */
     parse(input) {
         if (typeof input !== 'string' || input.trim() === '') {
-            throw new Error('layout: expected a non-empty layout string (e.g. "3x4" or "1 | 3x2").');
+            throw new Error(
+                'layout: expected a non-empty layout string (e.g. "3x4" or "1 | 3x2").',
+            );
         }
 
         const layout = input.trim();
 
         if (layout.includes('(') || layout.includes(')')) {
-            throw new Error(`layout "${layout}": grouping "()" is a v2 feature, not supported in v1.`);
+            throw new Error(
+                `layout "${layout}": grouping "()" is a v2 feature, not supported in v1.`,
+            );
         }
 
         const hasCols = layout.includes('|');
         const hasRows = layout.includes('/');
 
         if (hasCols && hasRows) {
-            throw new Error(`layout "${layout}": mixing "|" and "/" in one layout is a v2 feature; use a single operator.`);
+            throw new Error(
+                `layout "${layout}": mixing "|" and "/" in one layout is a v2 feature; use a single operator.`,
+            );
         }
 
-        if (! hasCols && ! hasRows) {
+        if (!hasCols && !hasRows) {
             return this._parseGrid(layout);
         }
 
@@ -65,7 +71,9 @@ class StructureParser {
         const regions = layout.split(separator).map((part) => this._parseGrid(part.trim()));
 
         if (regions.length < 2) {
-            throw new Error(`layout "${layout}": a "${separator}" composite needs at least two regions.`);
+            throw new Error(
+                `layout "${layout}": a "${separator}" composite needs at least two regions.`,
+            );
         }
 
         return { kind: 'split', direction, regions };
@@ -87,14 +95,18 @@ class StructureParser {
         }
 
         const match = GRID_RE.exec(token);
-        if (! match) {
-            throw new Error(`layout: invalid region "${token}"; expected "1" or "{rows}x{cols}" (e.g. "3x2").`);
+        if (!match) {
+            throw new Error(
+                `layout: invalid region "${token}"; expected "1" or "{rows}x{cols}" (e.g. "3x2").`,
+            );
         }
 
         const rows = Number(match[1]);
         const cols = Number(match[2]);
         if (rows < 1 || cols < 1) {
-            throw new Error(`layout: region "${token}" has a non-positive dimension; rows and cols must be >= 1.`);
+            throw new Error(
+                `layout: region "${token}" has a non-positive dimension; rows and cols must be >= 1.`,
+            );
         }
 
         return { kind: 'grid', rows, cols };

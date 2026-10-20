@@ -44,16 +44,16 @@ describe('resolveTracks (v1 track-sizing engine)', () => {
 
     it('floors a minmax(px, fr) track at its minimum', () => {
         // Both weight 1: after the 120 floor, 80 free splits 40/40 -> 160 / 40.
-        expect(
-            resolveTracks([minmax(px(120), fr(1)), fr(1)], { available: 200, gap: 0 }),
-        ).toEqual([160, 40]);
+        expect(resolveTracks([minmax(px(120), fr(1)), fr(1)], { available: 200, gap: 0 })).toEqual([
+            160, 40,
+        ]);
     });
 
     it('caps a minmax(px, px) track at its maximum and redistributes the excess', () => {
         // t1 grows to its 100 cap; the rest (300) goes to the fr track.
-        expect(
-            resolveTracks([minmax(px(50), px(100)), fr(1)], { available: 400, gap: 0 }),
-        ).toEqual([100, 300]);
+        expect(resolveTracks([minmax(px(50), px(100)), fr(1)], { available: 400, gap: 0 })).toEqual(
+            [100, 300],
+        );
     });
 
     it('lets fixed tracks overflow a too-small container (no silent clamping)', () => {
@@ -62,6 +62,8 @@ describe('resolveTracks (v1 track-sizing engine)', () => {
 
     it('handles three tracks with gaps', () => {
         // available 90, two 15px gaps -> 60 usable -> 20/20/20.
-        expect(resolveTracks([fr(1), fr(1), fr(1)], { available: 90, gap: 15 })).toEqual([20, 20, 20]);
+        expect(resolveTracks([fr(1), fr(1), fr(1)], { available: 90, gap: 15 })).toEqual([
+            20, 20, 20,
+        ]);
     });
 });

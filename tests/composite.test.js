@@ -45,9 +45,9 @@ describe('composite() (public API, end to end)', () => {
 
     it('applies a columns split with custom col-sizes', async () => {
         // '1 | 3x2' with col-sizes '2fr 1fr' over width 300 -> left region 200 wide.
-        const images = await Promise.all(Array.from({ length: 7 }, (_i, k) =>
-            solid(k === 0 ? '#123456' : '#999999'),
-        ));
+        const images = await Promise.all(
+            Array.from({ length: 7 }, (_i, k) => solid(k === 0 ? '#123456' : '#999999')),
+        );
         const { buffer } = await composite({
             layout: '1 | 3x2',
             colSizes: '2fr 1fr',
@@ -69,7 +69,13 @@ describe('composite() (public API, end to end)', () => {
         const images = [await solid('#00ff00')];
         const out = path.join(os.tmpdir(), `image-composer-test-${Date.now()}.png`);
         try {
-            const result = await compositeToFile({ layout: '1', width: 40, height: 40, images, out });
+            const result = await compositeToFile({
+                layout: '1',
+                width: 40,
+                height: 40,
+                images,
+                out,
+            });
             expect(result.path).toBe(out);
             expect(fs.existsSync(out)).toBe(true);
             const meta = await sharp(out).metadata();
@@ -83,6 +89,8 @@ describe('composite() (public API, end to end)', () => {
     });
 
     it('rejects a non-positive output size', async () => {
-        await expect(composite({ layout: '1', width: 0, height: 50, images: [] })).rejects.toThrow();
+        await expect(
+            composite({ layout: '1', width: 0, height: 50, images: [] }),
+        ).rejects.toThrow();
     });
 });

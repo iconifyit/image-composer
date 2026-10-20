@@ -34,7 +34,12 @@ describe('renderComposite', () => {
             solid('#0000ff'),
             solid('#ffff00'),
         ]);
-        const cells = [cell(0, 0, 50, 50), cell(50, 0, 50, 50), cell(0, 50, 50, 50), cell(50, 50, 50, 50)];
+        const cells = [
+            cell(0, 0, 50, 50),
+            cell(50, 0, 50, 50),
+            cell(0, 50, 50, 50),
+            cell(50, 50, 50, 50),
+        ];
 
         const { buffer, contentType } = await renderComposite({
             width: 100,
