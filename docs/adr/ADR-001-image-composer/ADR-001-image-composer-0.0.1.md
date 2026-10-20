@@ -1,6 +1,6 @@
 # ADR-001: image-composer — a general image-compositing package
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-18
 - **Deciders:** Scott (owner), Claude (author)
 
