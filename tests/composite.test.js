@@ -113,6 +113,38 @@ describe('composite() (public API, end to end)', () => {
         }
     });
 
+    it('infers the output format from the file extension when none is given', async () => {
+        // No explicit `format`, a `.webp` destination -> webp bytes, not the png default.
+        const images = [await solid('#00ff00')];
+        const out = path.join(os.tmpdir(), `image-composer-test-${Date.now()}.webp`);
+        try {
+            const result = await compositeToFile({
+                layout: '1',
+                width: 40,
+                height: 40,
+                images,
+                out,
+            });
+            expect(result.contentType).toBe('image/webp');
+            expect((await sharp(out).metadata()).format).toBe('webp');
+        } finally {
+            if (fs.existsSync(out)) {
+                fs.unlinkSync(out);
+            }
+        }
+    });
+
+    it('rejects an output extension whose format is unsupported and writes no file', async () => {
+        // '.jpg' infers an unsupported format: reject before writing, rather than
+        // putting png bytes under a .jpg name and reporting success.
+        const images = [await solid('#00ff00')];
+        const out = path.join(os.tmpdir(), `image-composer-test-${Date.now()}.jpg`);
+        await expect(
+            compositeToFile({ layout: '1', width: 40, height: 40, images, out }),
+        ).rejects.toThrow(/unsupported format/i);
+        expect(fs.existsSync(out)).toBe(false);
+    });
+
     it('rejects a non-positive output size', async () => {
         await expect(
             composite({ layout: '1', width: 0, height: 50, images: [] }),

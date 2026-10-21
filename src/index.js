@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('fs/promises');
+const path = require('node:path');
 const { StructureParser } = require('./parse/structure');
 const { SizingParser } = require('./parse/sizing');
 const { computeGeometry } = require('./layout/geometry');
@@ -89,17 +90,35 @@ const composite = async (options = {}) => {
 };
 
 /**
+ * Infer an output format token from a file path's extension. A missing extension
+ * defaults to `png`; any other extension is returned as-is (lowercased, no dot) so
+ * an unsupported one is rejected downstream rather than silently written as png.
+ * @param {string} filePath - destination path, e.g. 'out.webp'.
+ * @returns {string} a format token, e.g. 'png', 'webp', or 'jpg'.
+ * @example formatFromExtension('a/b.WEBP') // 'webp'
+ */
+const formatFromExtension = (filePath) => {
+    const ext = path.extname(filePath).toLowerCase().replace(/^\./, '');
+    return ext === '' ? 'png' : ext;
+};
+
+/**
  * Compose and write the result to a file.
  * @param {object} options - the `composite` options plus `out`.
  * @param {string} options.out - destination path.
+ * @param {'png'|'webp'} [options.format] - output format; when omitted it is
+ *   inferred from the `out` extension so the file's bytes match its name.
  * @returns {Promise<{ path: string, contentType: string }>}
  */
 const compositeToFile = async (options = {}) => {
-    const { out, ...rest } = options;
+    const { out, format, ...rest } = options;
     if (!out) {
         throw new Error('compositeToFile: `out` (destination path) is required.');
     }
-    const { buffer, contentType } = await composite(rest);
+    const { buffer, contentType } = await composite({
+        ...rest,
+        format: format ?? formatFromExtension(out),
+    });
     await fs.writeFile(out, buffer);
     return { path: out, contentType };
 };
@@ -118,6 +137,7 @@ module.exports = {
     composite,
     compositeToFile,
     compositeToDataUrl,
+    formatFromExtension,
     // Lower-level building blocks, exported for advanced use.
     StructureParser,
     SizingParser,

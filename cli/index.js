@@ -2,8 +2,7 @@
 'use strict';
 
 const { parseArgs } = require('node:util');
-const path = require('node:path');
-const { compositeToFile } = require('../src');
+const { compositeToFile, formatFromExtension } = require('../src');
 
 /**
  * @module cli
@@ -47,16 +46,6 @@ const num = (value, name) => {
     return n;
 };
 
-/**
- * Infer the output format from the file extension. A missing extension defaults
- * to png; a recognized one maps to its format; anything else is returned as-is so
- * the library rejects it rather than silently writing png into, say, a `.jpg`.
- */
-const formatFromPath = (out) => {
-    const ext = path.extname(out).toLowerCase().replace(/^\./, '');
-    return ext === '' ? 'png' : ext;
-};
-
 async function main(argv) {
     const { values, positionals } = parseArgs({
         args: argv,
@@ -94,7 +83,7 @@ async function main(argv) {
         throw new Error('at least one image input is required (positional arguments).');
     }
 
-    const format = values.format || formatFromPath(values.out);
+    const format = values.format || formatFromExtension(values.out);
 
     const result = await compositeToFile({
         layout: values.layout,
