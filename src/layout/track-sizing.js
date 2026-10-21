@@ -16,12 +16,16 @@
  * remains. Each one resolves to `clamp(fr * weight, min, max)` for a single flex
  * factor `fr` chosen so the flexible sizes sum to that remaining space. `fr` is
  * found by iterative freezing (CSS Flexbox §9.7, "Resolve Flexible Lengths"):
- * compute each track's fair share, and if the floor/cap clamping pushes the total
- * net-positive freeze the floor-violators at their `min`, net-negative freeze the
- * cap-violators at their `max`, then recompute `fr` over the rest until nothing
- * clamps. Freezing only the dominant sign each pass (never both at once) is what
- * keeps the result at the true `fr` size rather than overshooting. The floors are
- * hard: if they sum past the available space, the tracks overflow at their minimums.
+ * compute each unfrozen track's fair share; while any track escapes its bounds,
+ * freeze only the dominant side — the floor-violators at their `min` when their
+ * total deficit is at least the caps' total excess, otherwise the cap-violators at
+ * their `max` — and recompute `fr` over the rest. Freezing floor-violators lowers
+ * the `fr` left for the others (relaxing the caps) and freezing cap-violators raises
+ * it (relaxing the floors), so resolving the larger side first converges on the true
+ * `fr`; freezing both signs at once would overshoot, and stopping when the two sides
+ * merely cancel would leave tracks outside their own bounds. The floors are hard: if
+ * they sum past the available space, the tracks overflow at their minimums, and a
+ * `minmax` whose resolved `min` exceeds its `max` collapses to its floor.
  *
  * @typedef {import('../parse/sizing').TrackSize} TrackSize
  */
@@ -70,7 +74,9 @@ const classify = (track, available) => {
             if (max.type === 'auto') {
                 return { flex: { weight: 1, min, max: Infinity } };
             }
-            return { flex: { weight: 1, min, max: resolveFixed(max, available) } };
+            // A fixed max below the resolved floor inverts the bounds; CSS collapses
+            // an inverted minmax to its floor, so the floor wins.
+            return { flex: { weight: 1, min, max: Math.max(min, resolveFixed(max, available)) } };
         }
         default:
             throw new Error(`track-sizing: unsupported track type "${track.type}".`);
@@ -109,30 +115,30 @@ const distributeFlexible = (flexible, sizes, space) => {
             }
         });
 
-        const remaining = space - frozenSize;
         if (unfrozenWeight <= EPSILON) {
             return;
         }
 
-        const fr = remaining / unfrozenWeight;
+        const fr = (space - frozenSize) / unfrozenWeight;
 
-        // Net sign of the clamping over the unfrozen tracks: positive means the
-        // floors push the total up, negative means the caps pull it down.
-        let violation = 0;
+        // Over the still-unfrozen tracks, how many pixels the floors want to add and
+        // the caps want to remove. Each track counts on at most one side.
+        let floorDeficit = 0;
+        let capExcess = 0;
         flexible.forEach((f, i) => {
             if (frozen[i]) {
                 return;
             }
             const fair = fr * f.weight;
-            if (fair < f.min) {
-                violation += f.min - fair;
-            } else if (fair > f.max) {
-                violation += f.max - fair;
+            if (fair < f.min - EPSILON) {
+                floorDeficit += f.min - fair;
+            } else if (fair > f.max + EPSILON) {
+                capExcess += fair - f.max;
             }
         });
 
-        if (Math.abs(violation) <= EPSILON) {
-            // No bound binds: the fair shares are the final sizes.
+        if (floorDeficit <= EPSILON && capExcess <= EPSILON) {
+            // No track escapes its bounds: the fair shares are the final sizes.
             flexible.forEach((f, i) => {
                 if (!frozen[i]) {
                     sizes[f.index] = fr * f.weight;
@@ -141,16 +147,21 @@ const distributeFlexible = (flexible, sizes, space) => {
             return;
         }
 
-        const freezeFloor = violation > 0;
+        // Freeze only the dominant side this pass — never both at once, which would
+        // overshoot. Freezing floor-violators lowers the fr left for the rest and so
+        // relaxes the caps; freezing cap-violators raises it and relaxes the floors.
+        // Resolving the larger side first converges on the true fr size; when the two
+        // sides cancel exactly the floors take precedence.
+        const freezeFloors = floorDeficit >= capExcess;
         flexible.forEach((f, i) => {
             if (frozen[i]) {
                 return;
             }
             const fair = fr * f.weight;
-            if (freezeFloor && fair < f.min) {
+            if (freezeFloors && fair < f.min - EPSILON) {
                 sizes[f.index] = f.min;
                 frozen[i] = true;
-            } else if (!freezeFloor && fair > f.max) {
+            } else if (!freezeFloors && fair > f.max + EPSILON) {
                 sizes[f.index] = f.max;
                 frozen[i] = true;
             }

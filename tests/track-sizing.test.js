@@ -89,8 +89,36 @@ describe('resolveTracks (v1 track-sizing engine)', () => {
         ).toEqual([70, 10, 70]);
     });
 
+    it('keeps both bounds when a floor and a cap violation cancel', () => {
+        // Fair share 100 is below t0's 110 floor (+10) and above t1's 90 cap (-10):
+        // the deficit and excess cancel to a net of 0, but each track still escapes
+        // its own bound. Both must be honored -> t0 floors at 110, t1 caps at 90.
+        expect(
+            resolveTracks([minmax(px(110), fr(1)), minmax(auto(), px(90))], {
+                available: 200,
+                gap: 0,
+            }),
+        ).toEqual([110, 90]);
+    });
+
+    it('lets the floor win when a minmax resolves to min > max', () => {
+        // At available 400, 50% (200) exceeds the 100px cap, so the bounds invert.
+        // CSS collapses an inverted minmax to its floor: t0 is 200, t1 gets 200.
+        expect(
+            resolveTracks([minmax(pct(50), px(100)), fr(1)], { available: 400, gap: 0 }),
+        ).toEqual([200, 200]);
+    });
+
     it('lets fixed tracks overflow a too-small container (no silent clamping)', () => {
         expect(resolveTracks([px(200), px(200)], { available: 300, gap: 0 })).toEqual([200, 200]);
+    });
+
+    it('overflows a flexible floor past the container without going negative', () => {
+        // t0's 200 floor exceeds the whole 100px container: it overflows at 200 and
+        // the remaining fr track floors at 0 rather than taking a negative size.
+        expect(resolveTracks([minmax(px(200), fr(1)), fr(1)], { available: 100, gap: 0 })).toEqual([
+            200, 0,
+        ]);
     });
 
     it('handles three tracks with gaps', () => {
