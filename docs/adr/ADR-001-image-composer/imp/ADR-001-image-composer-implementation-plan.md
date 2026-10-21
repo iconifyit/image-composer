@@ -2,7 +2,7 @@
 
 - **Governs:** [ADR-001 v0.0.1](../ADR-001-image-composer-0.0.1.md) (Accepted).
 - **Repo:** `iconifyit/image-composer` (this repo); npm `@atomiclotus/image-composer`.
-- **Scope contract:** *Build the `image-composer` package — the pure `composite()` library + CLI, the layout DSL (structure + full v1 track sizing), the layout engine, and the renderer, with tests — and nothing else.* No vectoricons integration (that is ADR-033 / Phase 2, a separate repo).
+- **Scope contract:** _Build the `image-composer` package — the pure `composite()` library + CLI, the layout DSL (structure + full v1 track sizing), the layout engine, and the renderer, with tests — and nothing else._ No vectoricons integration (that is ADR-033 / Phase 2, a separate repo).
 
 ## Resolved implementation choices
 

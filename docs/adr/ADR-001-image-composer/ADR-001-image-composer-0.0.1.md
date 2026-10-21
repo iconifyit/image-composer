@@ -8,7 +8,7 @@
 
 Many applications need to compose a set of source images into a single output image — a grid of thumbnails, a stacked card, a contact sheet — at defined dimensions with margins and insets. This is a general, reusable capability, but it is usually re-implemented ad hoc and entangled with the surrounding application's domain logic (which images to pick, where to store the result), which makes it hard to test, reuse, or run outside that application.
 
-`image-composer` is a standalone, open-source package that provides just the compositing capability behind a small, pure contract, usable both as a library and as a command-line tool. It has no knowledge of any particular application's domain: the caller decides *which* images and *which* layout; the package only knows how to render them.
+`image-composer` is a standalone, open-source package that provides just the compositing capability behind a small, pure contract, usable both as a library and as a command-line tool. It has no knowledge of any particular application's domain: the caller decides _which_ images and _which_ layout; the package only knows how to render them.
 
 ## Decision
 
@@ -19,11 +19,11 @@ Build `image-composer` as a focused, pure package with a dual (library + CLI) in
 - **Library:** `composite(input) → output`, imported by any Node consumer (including a serverless function).
 - **CLI:** a `bin` entry so the same core runs from the command line for local use and testing:
 
-  ```text
-  image-composer --layout "1 | 3x2" --col-sizes "2fr 1fr" --gap 20 --images <paths…> --out <file>
-  ```
+    ```text
+    image-composer --layout "1 | 3x2" --col-sizes "2fr 1fr" --gap 20 --images <paths…> --out <file>
+    ```
 
-  The `--layout` value uses the layout notation defined below; sizing, gaps, and margins are supplied as separate flags (see "Layout model and notation").
+    The `--layout` value uses the layout notation defined below; sizing, gaps, and margins are supplied as separate flags (see "Layout model and notation").
 
 ### 2. A pure contract — images in, image out
 
@@ -41,19 +41,21 @@ Selection and placement policy stay in the caller; geometry and rendering stay i
 
 ### 3. Layout model and notation (v1)
 
-A layout is described by a small text notation. The string carries *structure*; sizing is supplied separately (below), so the structure stays instantly readable.
+A layout is described by a small text notation. The string carries _structure_; sizing is supplied separately (below), so the structure stays instantly readable.
 
 **Structure.**
+
 - **Plain grid:** `RxC` — rows × cols (e.g. `3x4`). `1` is a single cell. Axis order is **rows first**, matching the common `numRows, numCols` convention; the CLI also accepts `--rows` / `--cols` as the unambiguous long form.
 - **Composite (one level of nesting):** regions joined by a **single** operator — `|` (columns, side by side) **or** `/` (rows, stacked), not both in one layout. Each region is a grid `RxC` or a cell `1`. Examples: `1 | 3x2` (a cell beside a 3×2 grid), `2x2 | 2x2`, `1x4 / 1x4`. A region cannot itself contain a further split.
 
 **Sizing — separate templates, CSS-grid style.** Proportions live in their own flags, not in the structure string:
+
 - `--col-sizes` for a `|` split, `--row-sizes` for a `/` split, defaulting to equal (`1fr` each), with the token count matching the number of regions. This mirrors `grid-template-columns` / `grid-template-rows` and supports the **full CSS track-sizing vocabulary in v1**: `fr`, fixed lengths (`px`), percentages, and the `minmax()` and `auto` functions (e.g. `"2fr 1fr"`, `"200px 1fr"`, `"minmax(120px, 1fr) 2fr"`). `postcss-value-parser` already tokenizes these (functions included); the layout engine implements the track-sizing algorithm — distributing free space across tracks by weight, honoring each track's min/max. Because a pixel compositor has **no content flow**, `auto` is defined as a weight-1 flexible track (effectively `1fr`), and `minmax(min, max)` is a flexible track floored at `min` and capped at `max` (unbounded when the max is `fr`) — this keeps `auto`/`minmax` well-defined without any content-based sizing.
 - Cells within a sub-grid are uniform in v1 (the track sizing applies to the top-level regions).
 
 **Spacing / frame.** `gap` between cells and regions; `margin` / `padding` for the outer frame — CSS naming.
 
-**Deferred to v2 (not needed for the first version):** v1 is a **single-operator, one-level** *structure*. Grouping (`()`), mixing `|` and `/` in the same layout, and nesting beyond one level are facets of the same capability — all need a grouping mechanism — so they arrive together in v2, along with **named grid areas** (a separate structural layout mechanism, not a sizing feature). Track **sizing** is fully in v1 (`fr`, `px`, `%`, `minmax()`, `auto`). Keeping the v1 *structure* this simple keeps the parser and validator trivial.
+**Deferred to v2 (not needed for the first version):** v1 is a **single-operator, one-level** _structure_. Grouping (`()`), mixing `|` and `/` in the same layout, and nesting beyond one level are facets of the same capability — all need a grouping mechanism — so they arrive together in v2, along with **named grid areas** (a separate structural layout mechanism, not a sizing feature). Track **sizing** is fully in v1 (`fr`, `px`, `%`, `minmax()`, `auto`). Keeping the v1 _structure_ this simple keeps the parser and validator trivial.
 
 ### 4. Internal design — data-driven layouts, composition over inheritance
 
@@ -89,9 +91,11 @@ A layout is described by a small text notation. The string carries *structure*; 
 ## Alternatives considered
 
 ### A class taxonomy (a base composer with per-kind subclasses)
+
 Not needed. Because the package is pure (images + layout in, image out), what varies between use cases — which images, which layout — is a caller concern, and source-format differences are input normalization. Declarative layout definitions plus one renderer express the variation with far less surface than a class hierarchy.
 
 ### Embedding the capability inside a consumer and extracting later
+
 Rejected in favor of a standalone package from the start: a clean boundary and independent tests/versioning from day one, with no deferred extraction.
 
 ## Open questions / TBD (implementation detail)

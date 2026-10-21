@@ -12,6 +12,6 @@ This is the pointer document for ADR-001. It always links to the current version
 
 ## Version history
 
-| Version | Date | Status | Notes |
-|---|---|---|---|
+| Version                                    | Date       | Status   | Notes                                                                                                                                                 |
+| ------------------------------------------ | ---------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [0.0.1](./ADR-001-image-composer-0.0.1.md) | 2026-10-18 | Accepted | Initial design of the standalone image-composer package (pure contract, library + CLI, data-driven layouts, full v1 track sizing, two-parser design). |
