@@ -2,6 +2,9 @@
 
 const sharp = require('sharp');
 
+/** Output formats this renderer supports; anything else is rejected, not coerced. */
+const kSUPPORTED_FORMATS = ['png', 'webp'];
+
 /**
  * @module render/renderer
  *
@@ -46,6 +49,12 @@ const renderComposite = async ({
     inset = 0,
     format = 'png',
 }) => {
+    if (!kSUPPORTED_FORMATS.includes(format)) {
+        throw new Error(
+            `renderComposite: unsupported format "${format}" (supported: ${kSUPPORTED_FORMATS.join(', ')}).`,
+        );
+    }
+
     const count = Math.min(cells.length, images.length);
     const overlays = [];
 

@@ -55,8 +55,33 @@ describe('composite() (public API, end to end)', () => {
             height: 300,
             images,
         });
-        // Center of the left (feature) region: ~ (100, 150) -> the first image.
-        expect(await pixelAt(buffer, 100, 150)).toEqual([0x12, 0x34, 0x56]);
+        // x=175 lies in the left feature region only when '2fr 1fr' is honored
+        // (left = 200 wide); with the default equal split the boundary is at 150 and
+        // x=175 falls in the right 3x2 grid (#999999). Asserting the feature color
+        // here fails if the col-sizes are ignored.
+        expect(await pixelAt(buffer, 175, 150)).toEqual([0x12, 0x34, 0x56]);
+        // x=250 is in the right grid under either split -> confirms the right region.
+        expect(await pixelAt(buffer, 250, 150)).toEqual([0x99, 0x99, 0x99]);
+    });
+
+    it('applies a rows split with custom row-sizes', async () => {
+        // '1 / 3x2' with row-sizes '2fr 1fr' over height 300 -> top region 200 tall.
+        const images = await Promise.all(
+            Array.from({ length: 7 }, (_i, k) => solid(k === 0 ? '#123456' : '#999999')),
+        );
+        const { buffer } = await composite({
+            layout: '1 / 3x2',
+            rowSizes: '2fr 1fr',
+            width: 300,
+            height: 300,
+            images,
+        });
+        // y=175 lies in the top feature region only when '2fr 1fr' is honored
+        // (top = 200 tall); with the default equal split the boundary is at 150 and
+        // y=175 falls in the bottom 3x2 grid (#999999). Fails if row-sizes are ignored.
+        expect(await pixelAt(buffer, 150, 175)).toEqual([0x12, 0x34, 0x56]);
+        // (225,250) is centered on a bottom-grid cell image -> confirms the bottom region.
+        expect(await pixelAt(buffer, 225, 250)).toEqual([0x99, 0x99, 0x99]);
     });
 
     it('returns a data URL from compositeToDataUrl()', async () => {
@@ -92,5 +117,14 @@ describe('composite() (public API, end to end)', () => {
         await expect(
             composite({ layout: '1', width: 0, height: 50, images: [] }),
         ).rejects.toThrow();
+    });
+
+    it('rejects an unsupported output format instead of silently writing png', async () => {
+        // A format outside {png, webp} must fail loudly, not be coerced to png and
+        // reported as success (which would write png bytes under a false content type).
+        const images = [await solid('#ff0000')];
+        await expect(
+            composite({ layout: '1', width: 50, height: 50, images, format: 'jpeg' }),
+        ).rejects.toThrow(/unsupported format/i);
     });
 });

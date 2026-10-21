@@ -47,8 +47,15 @@ const num = (value, name) => {
     return n;
 };
 
-/** Infer the output format from the file extension (png unless .webp). */
-const formatFromPath = (out) => (path.extname(out).toLowerCase() === '.webp' ? 'webp' : 'png');
+/**
+ * Infer the output format from the file extension. A missing extension defaults
+ * to png; a recognized one maps to its format; anything else is returned as-is so
+ * the library rejects it rather than silently writing png into, say, a `.jpg`.
+ */
+const formatFromPath = (out) => {
+    const ext = path.extname(out).toLowerCase().replace(/^\./, '');
+    return ext === '' ? 'png' : ext;
+};
 
 async function main(argv) {
     const { values, positionals } = parseArgs({
