@@ -73,7 +73,7 @@ A layout is described by a small text notation. The string carries _structure_; 
 
 ### 6. Phasing
 
-- **Phase 1:** build and prove the package in isolation — the contract, library, and CLI, with unit tests plus CLI and golden-image checks, developed and run locally before any consumer depends on it.
+- **Phase 1:** build and prove the package in isolation — the contract, library, and CLI, with unit tests plus CLI and golden-image checks, developed and run locally before any consumer depends on it. Golden-image regression tests MUST compare decoded image pixel data rather than encoded PNG bytes (encoders and metadata vary without the image changing); they SHOULD use exact pixel comparison where rendering is deterministic — the v1 fixtures use solid-color inputs on integer cell rects, which resample identically across libvips builds — and MAY introduce an explicitly documented tolerance only if a legitimate cross-version rendering difference appears. Targeted pixel-sampling tests (asserting specific colors at specific coordinates) verify individual behaviors and complement the golden-image tests; they do not replace them, because a sampled point can miss an unexpected shift elsewhere in the image.
 - **Later:** consumers adopt the published package as a dependency. (Any specific consumer's integration — queues, storage, persistence — is that consumer's design, documented in that consumer's repo, not here.)
 
 ## Consequences
