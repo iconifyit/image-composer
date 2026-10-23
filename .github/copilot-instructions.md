@@ -69,13 +69,13 @@ severity.
 - Anchor the comment to the smallest relevant changed line or range.
 - Use this exact opening format:
 
-  `[SEV: <security|core|edge|cosmetic>] [<fix-now|defer-ok>] <one-sentence summary>`
+    `[SEV: <security|core|edge|cosmetic>] [<fix-now|defer-ok>] <one-sentence summary>`
 
 - After the opening line, explain:
 
-  1. the conditions that trigger the problem;
-  2. the incorrect or unsafe result; and
-  3. why the pull request causes or exposes that result.
+    1. the conditions that trigger the problem;
+    2. the incorrect or unsafe result; and
+    3. why the pull request causes or exposes that result.
 
 - Propose a concrete correction. Include a code suggestion when the change is
   local and unambiguous.
@@ -122,7 +122,8 @@ Treat the following repository rules as authoritative. Do not flag code that
 follows them. When a finding depends on a project rule, cite the relevant rule
 or file in the comment.
 
-- **Rule sources:** This document; if present: `CLAUDE.md`, `AGENTS.md`, `docs/CHANGE-WORKFLOW.md`.
+- **Rule sources:** This document; if present: `CLAUDE.md`, `AGENTS.md`, `docs/CHANGE-WORKFLOW.md`.
+
 - **Architecture and validation:** Validate at system boundaries (user input,
   external API responses). Do not request redundant defensive validation on
   trusted internal calls or framework/library guarantees.
@@ -136,13 +137,13 @@ or file in the comment.
   and no more than two per expression. Document functions with JSDoc.
 - **Testing conventions:** If/when this repository adds automated tests, each test
 
-  should open with a comment stating its scenario, and should fail if the
+    should open with a comment stating its scenario, and should fail if the
 
-  implementation it covers is removed. Avoid unrealistic placeholder data.
+    implementation it covers is removed. Avoid unrealistic placeholder data.
 
-  If/when end-to-end tests are added, place them under `e2e/`; place integration/
+    If/when end-to-end tests are added, place them under `e2e/`; place integration/
 
-  unit tests under the relevant module.
+    unit tests under the relevant module.
 
 - **Generated or vendored code:** Do not give ordinary source-level review to
   auto-generated sitemap/RSS files (`public/sitemaps/**`, RSS feed XML),
