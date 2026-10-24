@@ -92,7 +92,7 @@ image-composer --layout "1x4" --width 800 --height 240 --gap 16 --margin 24 --ou
 
 ```sh
 image-composer --layout "1 | 2x3" --col-sizes "2fr 1fr" --width 900 --height 540 \
-  --gap 16 --margin 24 --out feature.png  feature.png img1.png ... img6.png
+  --gap 16 --margin 24 --out feature-grid.png  feature.png img1.png ... img6.png
 ```
 
 ### Two grids side by side — `2x2 | 2x2`
