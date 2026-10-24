@@ -2,6 +2,7 @@
 
 const fs = require('fs/promises');
 const path = require('node:path');
+const sharp = require('sharp');
 const { StructureParser } = require('./parse/structure');
 const { SizingParser } = require('./parse/sizing');
 const { computeGeometry } = require('./layout/geometry');
@@ -32,6 +33,25 @@ const { renderComposite } = require('./render/renderer');
  * @param {'png'|'webp'} [options.format='png'] - output format.
  * @returns {Promise<{ buffer: Buffer, contentType: string }>}
  */
+/**
+ * Measure an image's source dimensions and the bounding box of its visible
+ * (non-background) content. Layout distributes columns by their live content, so
+ * the transparent/solid padding each source carries must be measured out rather
+ * than counted as part of a column's width. See ADR-002.
+ * @param {string|Buffer} image
+ * @returns {Promise<{ srcW: number, srcH: number, inkedW: number, inkedH: number }>}
+ */
+const measureContent = async (image) => {
+    const { width, height } = await sharp(image).metadata();
+    try {
+        const { info } = await sharp(image).trim().toBuffer({ resolveWithObject: true });
+        return { srcW: width, srcH: height, inkedW: info.width, inkedH: info.height };
+    } catch {
+        // Nothing to trim (uniform image): the whole frame is live content.
+        return { srcW: width, srcH: height, inkedW: width, inkedH: height };
+    }
+};
+
 const composite = async (options = {}) => {
     const {
         images = [],
@@ -53,6 +73,8 @@ const composite = async (options = {}) => {
     if (!Array.isArray(images)) {
         throw new Error('composite: `images` must be an array of paths or buffers.');
     }
+
+    const contentSizes = await Promise.all(images.map((image) => measureContent(image)));
 
     const tree = new StructureParser().parse(layout);
 
@@ -76,6 +98,7 @@ const composite = async (options = {}) => {
         margin,
         colSizes: colTracks,
         rowSizes: rowTracks,
+        contentSizes,
     });
 
     return renderComposite({

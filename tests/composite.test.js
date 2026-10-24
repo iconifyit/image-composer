@@ -80,8 +80,9 @@ describe('composite() (public API, end to end)', () => {
         // (top = 200 tall); with the default equal split the boundary is at 150 and
         // y=175 falls in the bottom 3x2 grid (#999999). Fails if row-sizes are ignored.
         expect(await pixelAt(buffer, 150, 175)).toEqual([0x12, 0x34, 0x56]);
-        // (225,250) is centered on a bottom-grid cell image -> confirms the bottom region.
-        expect(await pixelAt(buffer, 225, 250)).toEqual([0x99, 0x99, 0x99]);
+        // (133,250) sits on a bottom-grid icon (the grid block centers around x=150)
+        // -> confirms the bottom region.
+        expect(await pixelAt(buffer, 133, 250)).toEqual([0x99, 0x99, 0x99]);
     });
 
     it('returns a data URL from compositeToDataUrl()', async () => {
