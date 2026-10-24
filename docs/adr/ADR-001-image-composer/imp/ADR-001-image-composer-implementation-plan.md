@@ -30,7 +30,7 @@
 - Unit: parsers, track-sizing, geometry (deterministic, exhaustive on the sizing math).
 - Golden-image: the renderer, for representative layouts (`3x4`; `1 | 3x2` with `--col-sizes "2fr 1fr"`; a `minmax()` case).
 - CLI smoke: the examples above produce the expected files.
-- Full suite green before the PR. `.agent-review` governs review scope; archie → qoala on the PR.
+- Full suite green before the PR. `.agent-review` governs review scope; archie → koala → tess on the PR.
 
 ## Verification (end to end)
 
