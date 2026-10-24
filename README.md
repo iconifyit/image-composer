@@ -173,7 +173,7 @@ Sizing applies to the **top-level regions of a split**: `colSizes` / `--col-size
 --row-sizes "1fr 2fr"
 ```
 
-A region's track size sets how large its cells are. Within a region, cells are always equal squares (see [How images are placed](#how-images-are-placed)), so a larger track yields larger images.
+A region's track size sets how large its cells are. Within a region, cells are always equal squares (see [How images are placed](#how-images-are-placed)), so a larger track yields larger images — until the other axis becomes the limit. Each cell is the largest square that fits the region on both axes, so once a region's height (for a `|` split) or width (for a `/` split) is the tighter constraint, widening its track adds space around the images rather than enlarging them.
 
 ## Spacing
 
@@ -190,7 +190,7 @@ For a split layout, the spacing between regions — and between the outer region
 
 1. **Square cells.** Within each region, every cell is a square — the largest that fits the region's rows × columns plus gaps — so all images in a region share one scale. A plain grid's block of cells is centered in the frame.
 2. **Fit, never crop.** Each image is scaled to fit inside its cell with its aspect ratio preserved, and centered. Nothing is cropped or distorted.
-3. **Even spacing by visible content.** For a split, the regions are spread across the full image so the gap before the first region, between each pair, and after the last are one equal value. That spacing is measured between the images' **visible content**, not their padded frames: each source's transparent or solid padding is measured and excluded, so icons that carry their own padding still end up evenly spaced. The rule is `gap = (image width − total visible width of the regions) / (regions + 1)` for a `|` split (heights, for a `/` split).
+3. **Even spacing by visible content.** For a split, the regions are spread across the full image so the gutter before the first region, between each pair, and after the last are one equal value. That spacing is measured between the images' **visible content**, not their padded frames: each source's transparent or solid padding is measured and excluded, so icons that carry their own padding still end up evenly spaced. The rule is `gutter = (image width − total visible width of the regions) / (regions + 1)` for a `|` split (heights, for a `/` split).
 
 Compare the feature-beside-grid example above: the space left of the feature, between the feature and the grid, and right of the grid are equal, measured from the visible artwork.
 
