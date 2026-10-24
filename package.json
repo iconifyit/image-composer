@@ -1,6 +1,6 @@
 {
     "name": "@atomiclotus/image-composer",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "Compose a set of images into a single output image via a small layout DSL (grids, |/ regions, CSS-grid-style track sizing). Pure library + CLI.",
     "keywords": [
         "image",
