@@ -19,6 +19,43 @@ const pixelAt = async (buffer, x, y) => {
     return [data[0], data[1], data[2]];
 };
 
+/** A `size` solid centered on a `size + 2*pad` transparent canvas (padded source). */
+const paddedSolid = (color, size = 30, pad = 10) =>
+    sharp({ create: { width: size, height: size, channels: 4, background: color } })
+        .extend({
+            top: pad,
+            bottom: pad,
+            left: pad,
+            right: pad,
+            background: { r: 0, g: 0, b: 0, alpha: 0 },
+        })
+        .png()
+        .toBuffer();
+
+/** Runs [start,end] of consecutive non-background pixels along row `y`. */
+const contentRuns = async (buffer, y, bg) => {
+    const { data, info } = await sharp(buffer)
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+    const isBg = (x) => {
+        const i = (y * info.width + x) * 4;
+        return data[i] === bg[0] && data[i + 1] === bg[1] && data[i + 2] === bg[2];
+    };
+    const runs = [];
+    let start = null;
+    for (let x = 0; x < info.width; x += 1) {
+        if (!isBg(x)) {
+            if (start === null) start = x;
+        } else if (start !== null) {
+            runs.push([start, x - 1]);
+            start = null;
+        }
+    }
+    if (start !== null) runs.push([start, info.width - 1]);
+    return { runs, width: info.width };
+};
+
 /**
  * End-to-end: the public composite() API parses the layout + sizing, computes
  * geometry, and renders — so a layout string and an ordered image list produce a
@@ -83,6 +120,35 @@ describe('composite() (public API, end to end)', () => {
         // (133,250) sits on a bottom-grid icon (the grid block centers around x=150)
         // -> confirms the bottom region.
         expect(await pixelAt(buffer, 133, 250)).toEqual([0x99, 0x99, 0x99]);
+    });
+
+    it('distributes split columns by live content with uniform gutters between the visible icons', async () => {
+        // Padded sources (a 30px solid inside a 50px transparent frame): the layout
+        // must measure the inked content out, or the gutters collapse. Two tall
+        // columns so the center row crosses both; a magenta background marks the gaps.
+        const images = await Promise.all([paddedSolid('#123456'), paddedSolid('#999999')]);
+        const { buffer } = await composite({
+            layout: '1 | 1',
+            colSizes: '1fr 1fr',
+            width: 400,
+            height: 200,
+            gap: 0,
+            margin: 0,
+            background: '#ff00ff',
+            images,
+        });
+        const { runs, width } = await contentRuns(buffer, 100, [0xff, 0x00, 0xff]);
+        // Two visible columns separated by background.
+        expect(runs).toHaveLength(2);
+        const left = runs[0][0];
+        const middle = runs[1][0] - runs[0][1] - 1;
+        const right = width - 1 - runs[1][1];
+        // The gutter before, between, and after the visible content are one value.
+        expect(Math.abs(left - middle)).toBeLessThanOrEqual(2);
+        expect(Math.abs(middle - right)).toBeLessThanOrEqual(2);
+        // A real gutter exists — the padding was measured out, not counted as width
+        // (which would collapse the gutters to zero and pack the columns edge to edge).
+        expect(left).toBeGreaterThan(10);
     });
 
     it('returns a data URL from compositeToDataUrl()', async () => {

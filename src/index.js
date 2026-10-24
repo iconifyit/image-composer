@@ -19,21 +19,6 @@ const { renderComposite } = require('./render/renderer');
  */
 
 /**
- * @param {object} options
- * @param {Array<string|Buffer>} options.images - source images (paths or buffers), in fill order.
- * @param {string} options.layout - the layout DSL, e.g. '3x4' or '1 | 3x2'.
- * @param {number} options.width - output width (px).
- * @param {number} options.height - output height (px).
- * @param {string} [options.colSizes] - track template for a `|` split (e.g. '2fr 1fr').
- * @param {string} [options.rowSizes] - track template for a `/` split.
- * @param {number} [options.gap=0] - gap between cells/regions (px).
- * @param {number} [options.margin=0] - outer frame inset (px).
- * @param {number} [options.inset=0] - padding inside each cell (px).
- * @param {string} [options.background='#ffffff'] - canvas background.
- * @param {'png'|'webp'} [options.format='png'] - output format.
- * @returns {Promise<{ buffer: Buffer, contentType: string }>}
- */
-/**
  * Measure an image's source dimensions and the bounding box of its visible
  * (non-background) content. Layout distributes columns by their live content, so
  * the transparent/solid padding each source carries must be measured out rather
@@ -52,6 +37,25 @@ const measureContent = async (image) => {
     }
 };
 
+/**
+ * Compose pre-selected images into a single output image from a layout string and
+ * sizing/spacing options. Each image's visible content is measured so a split's
+ * columns are distributed by their live content (see ADR-002); pure — images in,
+ * image out.
+ * @param {object} options
+ * @param {Array<string|Buffer>} options.images - source images (paths or buffers), in fill order.
+ * @param {string} options.layout - the layout DSL, e.g. '3x4' or '1 | 3x2'.
+ * @param {number} options.width - output width (px).
+ * @param {number} options.height - output height (px).
+ * @param {string} [options.colSizes] - track template for a `|` split (e.g. '2fr 1fr').
+ * @param {string} [options.rowSizes] - track template for a `/` split.
+ * @param {number} [options.gap=0] - gap between cells/regions (px).
+ * @param {number} [options.margin=0] - outer frame inset (px).
+ * @param {number} [options.inset=0] - padding inside each cell (px).
+ * @param {string} [options.background='#ffffff'] - canvas background.
+ * @param {'png'|'webp'} [options.format='png'] - output format.
+ * @returns {Promise<{ buffer: Buffer, contentType: string }>}
+ */
 const composite = async (options = {}) => {
     const {
         images = [],

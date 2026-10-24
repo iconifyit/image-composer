@@ -5,14 +5,17 @@ const { resolveTracks } = require('./track-sizing');
 /**
  * @module layout/geometry
  *
- * Turns a layout tree (parse/structure) plus the output size, gap, margin, and
- * track templates into a flat list of cell rectangles in fill order — the
- * geometry the renderer places images into. See ADR-001.
+ * Turns a layout tree (parse/structure) plus the output size, gap, margin, track
+ * templates, and per-image content sizes into a flat list of cell rectangles in
+ * fill order — the geometry the renderer places images into. See ADR-002.
  *
- * Plain grids are uniform. A split sizes its top-level regions with the matching
- * track template (colSizes for a `|` split, rowSizes for a `/` split) and each
- * region is itself a uniform sub-grid. Cells fill region-by-region, each region
- * row-major.
+ * Within a region, cells are equal squares laid out as a block. A plain grid
+ * centers that block in the margin-inset area. A split sizes each region's cells
+ * from the matching track template (colSizes for `|`, rowSizes for `/`), then
+ * distributes the regions across the full image by their LIVE content — each
+ * region's block minus the padding on its outermost icons — so the gutter before
+ * the first, between each pair, and after the last are one value. Cells fill
+ * region-by-region, each region row-major.
  *
  * @typedef {import('../parse/structure').LayoutNode} LayoutNode
  * @typedef {import('../parse/sizing').TrackSize} TrackSize
