@@ -2,6 +2,7 @@
 
 const fs = require('fs/promises');
 const path = require('node:path');
+const sharp = require('sharp');
 const { StructureParser } = require('./parse/structure');
 const { SizingParser } = require('./parse/sizing');
 const { computeGeometry } = require('./layout/geometry');
@@ -18,6 +19,29 @@ const { renderComposite } = require('./render/renderer');
  */
 
 /**
+ * Measure an image's source dimensions and the bounding box of its visible
+ * (non-background) content. Layout distributes columns by their live content, so
+ * the transparent/solid padding each source carries must be measured out rather
+ * than counted as part of a column's width. See ADR-002.
+ * @param {string|Buffer} image
+ * @returns {Promise<{ srcW: number, srcH: number, inkedW: number, inkedH: number }>}
+ */
+const measureContent = async (image) => {
+    const { width, height } = await sharp(image).metadata();
+    try {
+        const { info } = await sharp(image).trim().toBuffer({ resolveWithObject: true });
+        return { srcW: width, srcH: height, inkedW: info.width, inkedH: info.height };
+    } catch {
+        // Nothing to trim (uniform image): the whole frame is live content.
+        return { srcW: width, srcH: height, inkedW: width, inkedH: height };
+    }
+};
+
+/**
+ * Compose pre-selected images into a single output image from a layout string and
+ * sizing/spacing options. Each image's visible content is measured so a split's
+ * columns are distributed by their live content (see ADR-002); pure — images in,
+ * image out.
  * @param {object} options
  * @param {Array<string|Buffer>} options.images - source images (paths or buffers), in fill order.
  * @param {string} options.layout - the layout DSL, e.g. '3x4' or '1 | 3x2'.
@@ -54,6 +78,8 @@ const composite = async (options = {}) => {
         throw new Error('composite: `images` must be an array of paths or buffers.');
     }
 
+    const contentSizes = await Promise.all(images.map((image) => measureContent(image)));
+
     const tree = new StructureParser().parse(layout);
 
     // Track sizing applies only to the top-level regions of a split; a plain grid
@@ -74,8 +100,10 @@ const composite = async (options = {}) => {
         height,
         gap,
         margin,
+        inset,
         colSizes: colTracks,
         rowSizes: rowTracks,
+        contentSizes,
     });
 
     return renderComposite({
