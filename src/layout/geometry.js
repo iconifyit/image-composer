@@ -42,25 +42,28 @@ const squareBox = (width, height, rows, cols, gap) =>
 const blockExtent = (box, count, gap) => count * box + (count - 1) * gap;
 
 /**
- * The largest drawn-inked extent, along one axis, among the images at `indices`
- * when each is scaled to fit a square cell of side `box` (aspect preserved). This
+ * The largest drawn-inked extent, along one axis, among the images at `indices`.
+ * The renderer fits each image inside the cell's inner box — the square side minus
+ * `inset` on each edge — so content is scaled by `(box - 2*inset) / max(src)`. This
  * is how far the visible content reaches inside the outermost cells of a block, so
  * half the leftover `box - thisExtent` is the padding to trim off the block edge
  * when measuring a column's live area. Missing/absent images contribute nothing.
  * @param {number[]} indices - image indices occupying the cells of interest.
  * @param {{srcW:number,srcH:number,inkedW:number,inkedH:number}[]|undefined} contentSizes
  * @param {number} box - square cell side.
+ * @param {number} inset - padding inside each cell (the renderer's `inset`).
  * @param {'w'|'h'} axis - measure inked width or inked height.
  * @returns {number}
  */
-const maxDrawnInked = (indices, contentSizes, box, axis) => {
+const maxDrawnInked = (indices, contentSizes, box, inset, axis) => {
+    const innerBox = Math.max(0, box - 2 * inset);
     let max = 0;
     for (const index of indices) {
         const content = contentSizes && contentSizes[index];
         if (!content) {
             continue;
         }
-        const scale = box / Math.max(content.srcW, content.srcH);
+        const scale = innerBox / Math.max(content.srcW, content.srcH);
         const drawn = (axis === 'w' ? content.inkedW : content.inkedH) * scale;
         if (drawn > max) {
             max = drawn;
@@ -112,10 +115,11 @@ const gridCells = (rect, rows, cols, gap) => {
  * @param {number} gap
  * @param {number} imageStart - index of the first image in this region.
  * @param {object[]|undefined} contentSizes - per-image measured sizes, or undefined.
+ * @param {number} inset - padding inside each cell (the renderer's `inset`).
  * @param {'cols'|'rows'} direction - split axis.
  * @returns {{ block: number, live: number, leadPad: number }}
  */
-const measureRegion = (region, box, gap, imageStart, contentSizes, direction) => {
+const measureRegion = (region, box, gap, imageStart, contentSizes, inset, direction) => {
     const [tracks, lines, axis] =
         direction === 'cols' ? [region.cols, region.rows, 'w'] : [region.rows, region.cols, 'h'];
     const block = blockExtent(box, tracks, gap);
@@ -135,8 +139,8 @@ const measureRegion = (region, box, gap, imageStart, contentSizes, direction) =>
         trailing.push(base + (tracks - 1) * step);
     }
 
-    const leadPad = (box - maxDrawnInked(leading, contentSizes, box, axis)) / 2;
-    const trailPad = (box - maxDrawnInked(trailing, contentSizes, box, axis)) / 2;
+    const leadPad = (box - maxDrawnInked(leading, contentSizes, box, inset, axis)) / 2;
+    const trailPad = (box - maxDrawnInked(trailing, contentSizes, box, inset, axis)) / 2;
     return { block, live: block - leadPad - trailPad, leadPad };
 };
 
@@ -150,13 +154,15 @@ const measureRegion = (region, box, gap, imageStart, contentSizes, direction) =>
  * @param {number} [opts.margin=0] - outer frame inset, in px.
  * @param {TrackSize[]} [opts.colSizes] - region widths for a `|` split (default equal).
  * @param {TrackSize[]} [opts.rowSizes] - region heights for a `/` split (default equal).
+ * @param {number} [opts.inset=0] - padding inside each cell; the live-area measurement
+ *   accounts for it so split gutters stay uniform when `inset` is set.
  * @param {object[]} [opts.contentSizes] - per-image measured source and inked sizes,
  *   in fill order; enables live-area column distribution.
  * @returns {{ width: number, height: number, cells: Rect[] }}
  */
 const computeGeometry = (
     layout,
-    { width, height, gap = 0, margin = 0, colSizes, rowSizes, contentSizes } = {},
+    { width, height, gap = 0, margin = 0, inset = 0, colSizes, rowSizes, contentSizes } = {},
 ) => {
     const inner = {
         x: margin,
@@ -196,6 +202,7 @@ const computeGeometry = (
                 gap,
                 imageStart,
                 contentSizes,
+                inset,
                 layout.direction,
             );
             imageStart += region.rows * region.cols;

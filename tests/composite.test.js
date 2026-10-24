@@ -151,6 +151,31 @@ describe('composite() (public API, end to end)', () => {
         expect(left).toBeGreaterThan(10);
     });
 
+    it('keeps split gutters uniform when a non-zero inset is applied', async () => {
+        // inset shrinks the drawn icon inside each cell. The live-area measurement must
+        // account for it; otherwise it over-estimates the content and the gutters go
+        // non-uniform (wider between the columns than at the edges).
+        const images = await Promise.all([paddedSolid('#123456'), paddedSolid('#999999')]);
+        const { buffer } = await composite({
+            layout: '1 | 1',
+            colSizes: '1fr 1fr',
+            width: 400,
+            height: 200,
+            gap: 0,
+            margin: 0,
+            inset: 20,
+            background: '#ff00ff',
+            images,
+        });
+        const { runs, width } = await contentRuns(buffer, 100, [0xff, 0x00, 0xff]);
+        expect(runs).toHaveLength(2);
+        const left = runs[0][0];
+        const middle = runs[1][0] - runs[0][1] - 1;
+        const right = width - 1 - runs[1][1];
+        expect(Math.abs(left - middle)).toBeLessThanOrEqual(2);
+        expect(Math.abs(middle - right)).toBeLessThanOrEqual(2);
+    });
+
     it('returns a data URL from compositeToDataUrl()', async () => {
         const images = [await solid('#ff0000')];
         const dataUrl = await compositeToDataUrl({ layout: '1', width: 50, height: 50, images });

@@ -100,6 +100,7 @@ const composite = async (options = {}) => {
         height,
         gap,
         margin,
+        inset,
         colSizes: colTracks,
         rowSizes: rowTracks,
         contentSizes,

@@ -41,7 +41,7 @@ Within each region, cells are a block of **equal squares**. Within a split, the 
 
 3. **Content measurement.** Before layout, each source image's **inked bounds** — the bounding box of its visible, non-background content — are measured. Sources routinely carry transparent or solid padding, and that padding is not part of a column's live area; counting it would make the gutters wrong.
 
-4. **Live column width.** A column's (region's) live extent along the split axis is its block extent minus the padding on its outermost cells. For each outermost track, an icon's drawn inked extent in a square cell is `box × inked / max(srcW, srcH)`; half of `box − thatExtent` is the padding trimmed from that edge. So the live extent spans from the first visible pixel to the last:
+4. **Live column width.** A column's (region's) live extent along the split axis is its block extent minus the padding on its outermost cells. Each image is drawn into the cell's inner box (the square side minus `inset` on each edge), so an icon's drawn inked extent is `(box − 2·inset) × inked / max(srcW, srcH)`; half of `box − thatExtent` is the padding trimmed from that edge. So the live extent spans from the first visible pixel to the last:
 
     ```text
     block   = cols * box + (cols - 1) * gap            // along the split axis
