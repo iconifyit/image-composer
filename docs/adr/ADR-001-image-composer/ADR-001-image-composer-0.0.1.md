@@ -41,6 +41,8 @@ Selection and placement policy stay in the caller; geometry and rendering stay i
 
 ### 3. Layout model and notation (v1)
 
+> **Cell placement superseded by [ADR-002](../ADR-002-composite-placement-model/ADR-002-composite-placement-model.md).** The layout notation, track-sizing vocabulary, and region split described here still hold. How cells are sized and positioned _within_ a region — and how a split's columns are distributed — is replaced by ADR-002 (square cells distributed by live content). The §4 "data-driven layouts" design is likewise refined there.
+
 A layout is described by a small text notation. The string carries _structure_; sizing is supplied separately (below), so the structure stays instantly readable.
 
 **Structure.**
